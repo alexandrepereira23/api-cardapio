@@ -5,6 +5,7 @@ import com.example.cardapio.food.FoodRepository;
 import com.example.cardapio.food.FoodRequestDTO;
 import com.example.cardapio.food.FoodResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -34,4 +35,12 @@ public class FoodController {
                 .toList();
         return foodList;
     }
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        foodRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
