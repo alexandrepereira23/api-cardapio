@@ -5,12 +5,16 @@ import com.example.cardapio.user.User;
 import com.example.cardapio.user.UserRepository;
 import com.example.cardapio.user.UserRole;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,17 +39,20 @@ public class AuthController {
         var auth = authenticationManager.authenticate(usernamePassword);
         
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        User user = (User) userDetails;
         
         String token = tokenService.generateToken(userDetails);
+        
+        User user = (User) userDetails;
         
         return ResponseEntity.ok(new AuthResponseDTO(token, user.getId(), user.getLogin(), user.getRole()));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO data) {
-        if (userRepository.findByLogin(data.login()) != null) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO data) {
+        if (userRepository.findByLogin(data.login()).isPresent()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Login já está em uso");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
 
         UserRole role = UserRole.USER;

@@ -11,5 +11,5 @@ public record FoodRequestDTO(
     String image,
     @NotNull(message = "Preço é obrigatório")
     @Positive(message = "Preço deve ser positivo")
-    Integer price
+    Double price
 ) {}

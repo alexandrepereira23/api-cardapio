@@ -19,7 +19,6 @@ public class FoodController {
     @Autowired
     private FoodRepository foodRepository;
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping
     public ResponseEntity<Void> saveFood(@Valid @RequestBody FoodRequestDTO data){
         Food foodDate = new Food(data);
@@ -27,7 +26,6 @@ public class FoodController {
         return ResponseEntity.status(201).build();
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping
     public List<FoodResponseDTO> getAllFood() {
         List<FoodResponseDTO> foodList = foodRepository.findAll()
@@ -37,11 +35,23 @@ public class FoodController {
         return foodList;
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         foodRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateFood(@PathVariable Long id, @Valid @RequestBody FoodRequestDTO data) {
+        Food food = foodRepository.findById(id).orElse(null);
+        if (food != null) {
+            food.setTitle(data.title());
+            food.setImage(data.image());
+            food.setPrice(data.price());
+            foodRepository.save(food);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
 }

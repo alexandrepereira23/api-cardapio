@@ -26,23 +26,33 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/auth/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
         String token = extractToken(request);
         
         if (token != null) {
-            String login = tokenService.getSubjectFromToken(token);
-            
-            if (login != null) {
-                UserDetails userDetails = userRepository.findByLogin(login);
+            try {
+                String login = tokenService.getSubjectFromToken(token);
                 
-                if (userDetails != null && tokenService.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authentication = 
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (login != null) {
+                    var userDetails = userRepository.findByLogin(login).orElse(null);
+                    
+                    if (userDetails != null && tokenService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authentication = 
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
+            } catch (Exception e) {
+                // Token inválido ou expirado, continua sem autenticação
             }
         }
         

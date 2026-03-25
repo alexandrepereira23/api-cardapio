@@ -7,6 +7,7 @@ import lombok.*;
 @Table(name = "foods")
 @Entity(name = "foods")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -17,8 +18,9 @@ public class Food {
     private long id;
 
     private String title;
+    @Column(length = 1000)
     private String image;
-    private Integer price;
+    private Double price;
 
     public Food(FoodRequestDTO data) {
         this.image = data.image();

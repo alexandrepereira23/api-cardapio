@@ -30,24 +30,34 @@ public class TokenService {
     }
 
     public String getSubjectFromToken(String token) {
-        return parseToken(token).getSubject();
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = getSubjectFromToken(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return parseToken(token).getExpiration().before(new Date());
-    }
-
-    private Claims parseToken(String token) {
-        return Jwts.parser()
+        Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+        return claims.getSubject();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            final String username = getSubjectFromToken(token);
+            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     private SecretKey getSigningKey() {
