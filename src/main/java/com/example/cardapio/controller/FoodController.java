@@ -4,6 +4,7 @@ import com.example.cardapio.food.Food;
 import com.example.cardapio.food.FoodRepository;
 import com.example.cardapio.food.FoodRequestDTO;
 import com.example.cardapio.food.FoodResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,10 @@ public class FoodController {
 
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping
-    public void saveFood(@RequestBody FoodRequestDTO data){
+    public ResponseEntity<Void> saveFood(@Valid @RequestBody FoodRequestDTO data){
         Food foodDate = new Food(data);
         foodRepository.save(foodDate);
-        return;
+        return ResponseEntity.status(201).build();
     }
 
     @CrossOrigin(origins = "*", allowedHeaders = "*")
